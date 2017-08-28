@@ -14,6 +14,7 @@ import numpy as np
 import networkx as nx
 import node2vec
 from gensim.models import Word2Vec
+from emb_lib import SkipGram;
 
 def parse_args():
 	'''
@@ -83,9 +84,13 @@ def learn_embeddings(walks):
 	'''
 	Learn embeddings by optimizing the Skipgram objective using SGD.
 	'''
-	walks = [map(str, walk) for walk in walks]
-	model = Word2Vec(walks, size=args.dimensions, window=args.window_size, min_count=0, sg=1, workers=args.workers, iter=args.iter)
-	model.save_word2vec_format(args.output)
+	walks = [map(lambda x: x-1, walk) for walk in walks]
+	#model = Word2Vec(walks, size=args.dimensions, window=args.window_size, min_count=0, sg=1, workers=args.workers, iter=args.iter)
+	#print model
+	model = SkipGram({'walks':walks, 'emb_size':args.dimensions, 'num_nodes':len(walks) // args.num_walks,\
+		'window_size':args.window_size, 'iter':args.iter, 'neg_ratio':5})
+	model.train()
+	#model.save_word2vec_format(args.output)
 	
 	return
 
